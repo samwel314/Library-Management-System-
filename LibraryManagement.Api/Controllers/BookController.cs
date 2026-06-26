@@ -44,12 +44,25 @@ namespace LibraryManagement.Api.Controllers
         }
         [EndpointName("GetBookById")]
         [EndpointDescription("Retrieves a book by its identifier.")]
-        [ProducesResponseType<ResultT<CategoryDto>>(StatusCodes.Status200OK)]
+        [ProducesResponseType<ResultT<BookDetailsDto>>(StatusCodes.Status200OK)]
         [ProducesResponseType<Result>(StatusCodes.Status404NotFound)]
         [HttpGet("{id}", Name = "GetBookById")]
         public async Task<IActionResult> GetById(int id, CancellationToken cancellation)
         {
-            return NotFound();
+            var result  = await _bookService.GetByIdAsync(id, cancellation);  
+            if (result.IsSuccess)
+                return Ok(result);
+            return NotFound(result);
+        }
+
+        [EndpointName("GetAllBooks")]
+        [EndpointDescription("Retrieves all books.")]
+        [ProducesResponseType<ResultT<IEnumerable<BookDto>>>(StatusCodes.Status200OK)]
+        [HttpGet]
+        public async Task<IActionResult> GetAll( [FromQuery] BookFilterDto bookFilter , CancellationToken cancellation)
+        {
+            var result = await _bookService.GetAllAsync(bookFilter ,cancellation);
+            return Ok(result);
         }
     }
 }

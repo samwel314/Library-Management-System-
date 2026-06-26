@@ -83,5 +83,94 @@ namespace LibraryManagement.Api.Services
             await _db.SaveChangesAsync(cancellation);
             return ResultT<int?>.Success(book.Id, "book created successfuly");
         }
+
+        public async Task<ResultT<IEnumerable<BookDto>>> GetAllAsync(BookFilterDto bookFilter , CancellationToken cancellation)
+        {
+            var booksQuery = _db.Books.AsNoTracking();
+            if (bookFilter.Status != null)
+                booksQuery = booksQuery.Where(b => b.Status == bookFilter.Status); 
+            if (!string.IsNullOrWhiteSpace(bookFilter.Title))
+                booksQuery = booksQuery.Where(b => b.Title.Contains( bookFilter.Title));
+            if (!string.IsNullOrWhiteSpace(bookFilter.Category))
+                booksQuery = booksQuery.Where(b => b.Category.Name.Contains(bookFilter.Category));
+            if (!string.IsNullOrWhiteSpace(bookFilter.Author))
+                booksQuery = booksQuery.Where(b =>
+                    b.BookAuthors.Any(a => a.Author.Name.Contains(bookFilter.Author)));
+            if (bookFilter.Page <= 0)
+                bookFilter.Page = 1;
+            if (bookFilter.PageSize < 5)
+                bookFilter.PageSize = 5;
+
+            var books =  await booksQuery.Select(b => new BookDto
+            {
+                Id = b.Id,  
+                Title   = b.Title,  
+                Authors = b.BookAuthors.Select(a => new AuthorLookupDto
+                {
+                    Id = a.Author.Id,  
+                    Name = a.Author.Name,  
+                }).ToList(),    
+                Category = new CategoryLookupDto
+                {
+                    Id = b.Category.Id,
+                    Name = b.Category.Name, 
+                } , 
+                Publisher = new PublisherLookupDto
+                {
+                    Id = b.Publisher.Id,
+                    Name = b.Publisher.Name,
+                },
+                Status = b.Status , 
+                CoverImageUrl = b.CoverImageUrl!
+            }).Skip((bookFilter.Page - 1) * bookFilter.PageSize)
+                    .Take(bookFilter.PageSize).ToListAsync(cancellation); 
+
+            return ResultT<IEnumerable<BookDto>>.Success(books); ;
+        }
+
+        public async Task<ResultT<BookDetailsDto>> GetByIdAsync(int id, CancellationToken cancellation)
+        {
+            var book = await _db.Books.Where(b => b.Id == id).Select(b => new BookDetailsDto
+            {
+                Id = b.Id , 
+                Title = b.Title ,   
+                Edition = b.Edition , 
+                Summary = b.Summary ,   
+                Status = b.Status , 
+                ISBN    = b.ISBN ,  
+                Category = new CategoryDto
+                {
+                    Id = b.Category.Id, 
+                    Name = b.Category.Name,
+                    Parent = b.Category.ParentCategory != null ?  new CategoryLookupDto
+                    {
+                        Id = b.Category.ParentCategory.Id,
+                        Name = b.Category.ParentCategory.Name,
+                    } 
+                    : null
+                }, 
+                Language = b.Language , 
+                CoverImageUrl = b.CoverImageUrl! ,
+                PublicationYear = b.PublicationYear ,   
+                Publisher = new PublisherDto
+                {
+                    Id = b.Publisher.Id,    
+                    Name = b.Publisher.Name,
+                    ContactInfo = b.Publisher.ContactInfo,
+                    Country = b.Publisher.Country , 
+                }, 
+                Authors = b.BookAuthors.Select(a => new AuthorLookupDto
+                {
+                    Id = a.Author.Id , 
+                    Name = a.Author.Name,   
+                }).ToList(),    
+            }).FirstOrDefaultAsync(cancellation);
+            if (book == null)
+                return ResultT<BookDetailsDto>.Failure("this book is not found", ErrorType.NotFound);
+
+            return ResultT<BookDetailsDto>.Success(book);
+        }
     }
+    
 }
+
