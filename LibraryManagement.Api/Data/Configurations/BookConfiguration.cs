@@ -16,7 +16,7 @@ namespace LibraryManagement.Api.Data.Configurations
             builder.HasIndex(b => b.ISBN).IsUnique();
 
             builder.HasMany(b => b.BorrowTransactions).WithOne(bt => bt.Book).HasForeignKey(bt => bt.BookId).OnDelete(DeleteBehavior.Restrict);
-            builder.HasMany(b => b.BookAuthors).WithOne(ba => ba.Book).HasForeignKey(ba => ba.BookId).OnDelete(DeleteBehavior.Restrict);
+            builder.HasMany(b => b.BookAuthors).WithOne(ba => ba.Book).HasForeignKey(ba => ba.BookId).OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

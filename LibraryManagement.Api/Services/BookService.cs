@@ -252,6 +252,22 @@ namespace LibraryManagement.Api.Services
             await _db.SaveChangesAsync(cancellation);
             return Result.Success("book updated successfuly");
         }
+        public async Task<Result> DeleteAsync(int id, CancellationToken cancellation)
+        {
+
+            var book = await _db.Books.FindAsync(id, cancellation);
+            if (book == null)
+                return Result.Failure($"book not found", ErrorType.NotFound);
+            var hasBorrowingHistory = await _db.BorrowTransactions.AnyAsync(b => b.BookId == id, cancellation);
+            if (hasBorrowingHistory)
+                return Result.Failure($"this book has browing history", ErrorType.Validation);
+
+            _fileStorageService.DeleteImage(book.CoverImageUrl!);
+            _db.Books.Remove(book);
+            await _db.SaveChangesAsync(cancellation);
+
+            return Result.Success("book deleted successfuly");
+        }
     }
     
 }

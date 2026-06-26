@@ -135,6 +135,25 @@ namespace LibraryManagement.Api.Controllers
                 _ => StatusCode(StatusCodes.Status500InternalServerError, result)
             };
         }
+        [EndpointName("DeleteBook")]
+        [EndpointDescription("Deletes a Book if it has no borrow history.")]
+        [ProducesResponseType<Result>(StatusCodes.Status200OK)]
+        [ProducesResponseType<Result>(StatusCodes.Status404NotFound)]
+        [ProducesResponseType<Result>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<Result>(StatusCodes.Status500InternalServerError)]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteById(int id, CancellationToken cancellation)
+        {
+            var result = await _bookService.DeleteAsync(id, cancellation);
+            if (result.IsSuccess)
+                return Ok(result);
 
+            return result.ErrorType switch
+            {
+                ErrorType.NotFound => NotFound(result),
+                ErrorType.Validation => BadRequest(result),
+                _ => StatusCode(StatusCodes.Status500InternalServerError, result)
+            };
+        }
     }
 }
