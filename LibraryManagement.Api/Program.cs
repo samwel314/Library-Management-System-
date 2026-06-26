@@ -42,7 +42,8 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IPublisherService, PublisherService>();
 builder.Services.AddScoped<IBookService, BookService>(); 
 builder.Services.AddScoped<IAuthorService, AuthorService>();
-builder.Services.AddScoped<IFileStorageService, FileStorageService> (); 
+builder.Services.AddScoped<IFileStorageService, FileStorageService> ();
+builder.Services.AddScoped<IMemberService, MemberService>();
 // AddAuthentication & AddAuthorization
 builder.Services.AddAuthentication(options =>
 {
