@@ -1,4 +1,6 @@
-﻿namespace LibraryManagement.Api.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace LibraryManagement.Api.DTOs
 {
     public class CategoryDto
     {
@@ -6,5 +8,4 @@
         public string Name { get; set; } = null!;
         public CategoryLookupDto? Parent { get; set; } = null!;
     }
-
 }

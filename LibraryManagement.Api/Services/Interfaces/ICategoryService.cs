@@ -12,5 +12,4 @@ namespace LibraryManagement.Api.Services.Interfaces
         Task<Result> UpdateAsync(int id, CategoryRequestDto requestDto, CancellationToken cancellation);
         Task<Result> DeleteAsync(int id, CancellationToken cancellation);
     }
-
 }

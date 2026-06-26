@@ -38,6 +38,7 @@ builder.Services
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IPublisherService, PublisherService>();
 // AddAuthentication & AddAuthorization
 builder.Services.AddAuthentication(options =>
 {
