@@ -5,7 +5,7 @@ namespace LibraryManagement.Api.DTOs
     public class PublisherRequestDto
     {
         [Required(ErrorMessage = "Publisher name is required.")]
-        [Length(minimumLength: 1, maximumLength: 50, ErrorMessage = "category name length between 1 : 50 chars ")]
+        [Length(minimumLength: 1, maximumLength: 50, ErrorMessage = "Publisher name length between 1 : 50 chars ")]
         public string Name { get; set; } = null!;
         [MaxLength(50 ,  ErrorMessage = "Country length can not be grater than 50 char")]
         public string? Country { get; set; }

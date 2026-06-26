@@ -39,6 +39,9 @@ builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IPublisherService, PublisherService>();
+builder.Services.AddScoped<IBookService, BookService>(); 
+builder.Services.AddScoped<IAuthorService, AuthorService>();
+builder.Services.AddScoped<IFileStorageService, FileStorageService> (); 
 // AddAuthentication & AddAuthorization
 builder.Services.AddAuthentication(options =>
 {
@@ -120,6 +123,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 

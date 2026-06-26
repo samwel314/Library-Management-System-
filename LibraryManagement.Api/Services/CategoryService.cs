@@ -35,7 +35,7 @@ namespace TLibraryManagement.Api.Services
                 Name = requestDto.Name  ,
                 ParentCategoryId = requestDto.ParentId
             };
-            _db.Categories.Add(category);   
+            await _db.Categories.AddAsync(category , cancellation);   
             await _db.SaveChangesAsync(cancellation);
             return ResultT<int?>.Success(category.Id , "category created successfuly"); 
         }

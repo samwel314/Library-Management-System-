@@ -31,7 +31,7 @@ namespace TLibraryManagement.Api.Services
                 ContactInfo = requestDto.ContactInfo,   
                 Country = requestDto.Country,   
             };
-            _db.Publishers.Add(publisher);
+            await _db.Publishers.AddAsync(publisher , cancellation);
             await _db.SaveChangesAsync(cancellation);
             return ResultT<int?>.Success(publisher.Id, "Publisher created successfully");
         }

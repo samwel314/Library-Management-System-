@@ -7,7 +7,7 @@
         public required string ISBN { get; set; }
         public required string Language { get; set; }
         public int PublicationYear { get; set; }
-        public BookStatus Status { get; set; }
+        public BookStatus Status { get; set; } = BookStatus.In; 
         public string? Edition { get; set; }
         public string? Summary { get; set; }
         public string? CoverImageUrl { get; set; }
