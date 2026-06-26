@@ -3,8 +3,11 @@ using LibraryManagement.Api.DTOs;
 using LibraryManagement.Api.Entities;
 using LibraryManagement.Api.Services.Interfaces;
 using LibraryManagement.Api.Shared;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.ObjectPool;
 using System.Diagnostics.CodeAnalysis;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace LibraryManagement.Api.Services
@@ -58,12 +61,10 @@ namespace LibraryManagement.Api.Services
                     ErrorType.Validation);
             }
             var coverImageUrl = await _fileStorageService.SaveImageAsync(requestDto.CoverImage ,cancellation);
-            var bookAuthors = new List<BookAuthor>();
-            foreach (var id in requestDto.AuthorsIds)
-                bookAuthors.Add(new BookAuthor
-                {
-                    AuthorId = id,  
-                }); 
+            var bookAuthors = requestDto.AuthorsIds.Select(id => new BookAuthor
+            {
+                AuthorId = id
+            }).ToList(); 
 
             var book = new Book 
             {
@@ -169,6 +170,87 @@ namespace LibraryManagement.Api.Services
                 return ResultT<BookDetailsDto>.Failure("this book is not found", ErrorType.NotFound);
 
             return ResultT<BookDetailsDto>.Success(book);
+        }
+
+        public async Task<Result> UpdateAuthorsAsync(int id, UpdateBookAuthorsDto requestDto, CancellationToken cancellation)
+        {
+            requestDto.AuthorIds = requestDto.AuthorIds.Distinct().ToList();
+            if (!requestDto.AuthorIds.Any())
+                return Result.Failure("Booke should belong to at least one author", ErrorType.Validation);
+            var isFound = await _db.Books.AnyAsync(b => b.Id == id, cancellation);
+            if (!isFound )
+                return Result.Failure("Book not found", ErrorType.NotFound);
+
+            var existingAuthorsCount = await _db.Authors.CountAsync(a => requestDto.AuthorIds.Contains(a.Id), cancellation);
+
+            if (existingAuthorsCount != requestDto.AuthorIds.Count)
+                return Result.Failure("Some authors ids not found", ErrorType.NotFound);
+            var oldList = await _db.BookAuthors.Where(ba => ba.BookId == id).ToListAsync(cancellation);
+            _db.BookAuthors.RemoveRange(oldList);
+            var bookAuthors = requestDto.AuthorIds.Select(aid => new BookAuthor
+            {
+                BookId = id,
+                AuthorId = aid
+            });
+
+            await _db.BookAuthors.AddRangeAsync(bookAuthors, cancellation);
+            await _db.SaveChangesAsync(cancellation);
+            return Result.Success("book updated successfuly"); 
+        }
+
+        public async Task<Result> UpdateBasicInfoAsync(int id, UpdateBookBasicInfoDto requestDto, CancellationToken cancellation)
+        {
+            requestDto.Title = requestDto.Title.Trim();
+            requestDto.ISBN = requestDto.ISBN.Trim();
+            requestDto.Language = requestDto.Language.Trim();
+            requestDto.Edition = requestDto.Edition?.Trim();
+            requestDto.Summary = requestDto.Summary?.Trim();
+            var book =await _db.Books.FindAsync(id, cancellation); 
+            if (book == null)
+                return Result.Failure("Book not found", ErrorType.NotFound);
+
+            var isExistedISBN = await _db.Books.AnyAsync(b => b.ISBN == requestDto.ISBN && b.Id != id, cancellation);
+            if (isExistedISBN)
+                return Result.Failure("ISBN already exists.", ErrorType.Conflict);
+
+            var isExistedPublisher = await _db.Publishers.AnyAsync(p => p.Id == requestDto.PublisherId, cancellation);
+            if (!isExistedPublisher)
+                return Result.Failure("Publisher not found", ErrorType.NotFound);
+
+            var isExistedCategory = await _db.Categories.AnyAsync(c => c.Id == requestDto.CategoryId, cancellation);
+            if (!isExistedCategory)
+                return Result.Failure("Category not found", ErrorType.NotFound);
+
+            book.Title = requestDto.Title;
+            book.ISBN = requestDto.ISBN;
+            book.Language = requestDto.Language;
+            book.Summary = requestDto.Summary;
+            book.Edition = requestDto.Edition;
+            book.PublicationYear = requestDto.PublicationYear;
+            book.CategoryId = requestDto.CategoryId;
+            book.PublisherId = requestDto.PublisherId;
+            await _db.SaveChangesAsync (cancellation);
+            return Result.Success("book updated successfuly"); 
+        }
+
+        public async Task<Result> UpdateCoverImageAsync(int id, UpdateBookCoveImageDto requestDto, CancellationToken cancellation)
+        {
+
+            var extension = Path.GetExtension(requestDto.CoverImage.FileName).ToLower();
+
+            if (!FileStorageService.Allows.Contains(extension))
+            {
+                return Result.Failure($"Allow extensions {string.Join(',', FileStorageService.Allows)}",
+                    ErrorType.Validation);
+            }
+            var book = await _db.Books.FindAsync(id, cancellation);
+            if (book == null)
+                return Result.Failure("Book not found", ErrorType.NotFound);
+            var coverImageUrl = await _fileStorageService.SaveImageAsync(requestDto.CoverImage, cancellation);
+            _fileStorageService.DeleteImage(book.CoverImageUrl!);        
+            book.CoverImageUrl = coverImageUrl;
+            await _db.SaveChangesAsync(cancellation);
+            return Result.Success("book updated successfuly");
         }
     }
     

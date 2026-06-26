@@ -18,7 +18,7 @@ namespace LibraryManagement.Api.Controllers
         {
             _bookService = bookService;
         }
-        [EndpointName("BookCategory")]
+        [EndpointName("CreateBook")]
         [EndpointDescription("Creates a new book.")]
         [Consumes("multipart/form-data")]
         [ProducesResponseType<ResultT<int?>>(StatusCodes.Status201Created)]
@@ -64,5 +64,77 @@ namespace LibraryManagement.Api.Controllers
             var result = await _bookService.GetAllAsync(bookFilter ,cancellation);
             return Ok(result);
         }
+
+        [EndpointName("UpdateBookBasicInfo")]
+        [EndpointDescription("Updates an existing book basic info.")]
+        [Consumes("application/json")]
+        [ProducesResponseType<Result>(StatusCodes.Status200OK)]
+        [ProducesResponseType<Result>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<Result>(StatusCodes.Status404NotFound)]
+        [ProducesResponseType<Result>(StatusCodes.Status409Conflict)]
+        [ProducesResponseType<Result>(StatusCodes.Status500InternalServerError)]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateBasicInfo(int id, UpdateBookBasicInfoDto requestDto,
+               CancellationToken cancellation)
+        {
+            var result = await _bookService.UpdateBasicInfoAsync(id, requestDto, cancellation);
+            if (result.IsSuccess)
+                return Ok(result);
+
+            return result.ErrorType switch
+            {
+                ErrorType.Conflict => Conflict(result),
+                ErrorType.NotFound => NotFound(result),
+                ErrorType.Validation => BadRequest(result),
+                _ => StatusCode(StatusCodes.Status500InternalServerError, result)
+            };
+        }
+
+        [EndpointName("UpdateBookAuthors")]
+        [EndpointDescription("Updates an existing book authors .")]
+        [Consumes("application/json")]
+        [ProducesResponseType<Result>(StatusCodes.Status200OK)]
+        [ProducesResponseType<Result>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<Result>(StatusCodes.Status404NotFound)]
+        [ProducesResponseType<Result>(StatusCodes.Status500InternalServerError)]
+        [HttpPut("{id}/authors")]
+        public async Task<IActionResult> UpdateBookAuthors(int id, UpdateBookAuthorsDto requestDto,
+            CancellationToken cancellation)
+        {
+            var result = await _bookService.UpdateAuthorsAsync(id, requestDto, cancellation);
+            if (result.IsSuccess)
+                return Ok(result);
+
+            return result.ErrorType switch
+            {
+                ErrorType.NotFound => NotFound(result),
+                ErrorType.Validation => BadRequest(result),
+                _ => StatusCode(StatusCodes.Status500InternalServerError, result)
+            };
+        }
+
+        [EndpointName("UpdateBookCoverImage")]
+        [EndpointDescription("Updates an existing book cover image  .")]
+        [Consumes("multipart/form-data")]
+        [ProducesResponseType<Result>(StatusCodes.Status200OK)]
+        [ProducesResponseType<Result>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<Result>(StatusCodes.Status404NotFound)]
+        [ProducesResponseType<Result>(StatusCodes.Status500InternalServerError)]
+        [HttpPut("{id}/cover-image")]
+        public async Task<IActionResult> UpdateBookCoverImage(int id, [FromForm] UpdateBookCoveImageDto requestDto,
+            CancellationToken cancellation)
+        {
+            var result = await _bookService.UpdateCoverImageAsync(id, requestDto, cancellation);
+            if (result.IsSuccess)
+                return Ok(result);
+
+            return result.ErrorType switch
+            {
+                ErrorType.NotFound => NotFound(result),
+                ErrorType.Validation => BadRequest(result),
+                _ => StatusCode(StatusCodes.Status500InternalServerError, result)
+            };
+        }
+
     }
 }

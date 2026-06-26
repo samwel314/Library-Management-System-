@@ -4,6 +4,6 @@
     {
         Task<string> SaveImageAsync(IFormFile file, CancellationToken cancellation);
 
-        void DeleteImageAsync(string path);
+        void DeleteImage(string path);
     }
 }

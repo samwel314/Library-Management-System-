@@ -15,7 +15,7 @@ namespace LibraryManagement.Api.Services
             ".jpg" ,
             ".png" ,
         };
-        public  void DeleteImageAsync(string path)
+        public  void DeleteImage(string path)
         {
             if (string.IsNullOrWhiteSpace(path)) return;
             var webPath = _webHostEnvironment.WebRootPath;
