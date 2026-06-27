@@ -27,7 +27,7 @@ namespace LibraryManagement.Api.Controllers
         [ProducesResponseType<ResultT<int?>>(StatusCodes.Status409Conflict)]
         [ProducesResponseType<ResultT<int?>>(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<IActionResult> BorrowBook(BorrowBookRequestDto requestDto , CancellationToken cancellation )
+        public async Task<IActionResult> BorrowBook(BorrowBookRequestDto requestDto, CancellationToken cancellation)
         {
             var result = await _borrowServices.BorrowBookAsync(requestDto, cancellation);
             if (result.IsSuccess)
@@ -41,16 +41,37 @@ namespace LibraryManagement.Api.Controllers
                 _ => StatusCode(StatusCodes.Status500InternalServerError, result)
             };
         }
-        [EndpointDescription("Retrieves a borrow transcation by its identifier.")]
-        [ProducesResponseType<ResultT<CategoryDto>>(StatusCodes.Status200OK)]
+        [EndpointDescription("Retrieves a borrowing transaction by its identifier..")]
+        [ProducesResponseType<ResultT<BorrowTransactionDto>>(StatusCodes.Status200OK)]
         [ProducesResponseType<Result>(StatusCodes.Status404NotFound)]
         [HttpGet("{id}", Name = "GetBorrowingById")]
-        public IActionResult GetBorrowTranscationById (int id , CancellationToken cancellation)
+        public async Task<IActionResult> GetById(int id, CancellationToken cancellation)
         {
-            return Ok(); 
+            var result = await _borrowServices.GetBorrowingByIdAsync(id, cancellation);
+            if (result.IsSuccess)
+                return Ok(result);
+
+            return NotFound(result);
         }
-}
+        [EndpointName("ReturnBorrowing")]
+        [EndpointDescription("Returns a borrowed book by its borrowing transaction identifier.")]
+        [ProducesResponseType<Result>(StatusCodes.Status200OK)]
+        [ProducesResponseType<Result>(StatusCodes.Status404NotFound)]
+        [ProducesResponseType<Result>(StatusCodes.Status409Conflict)]
+        [ProducesResponseType<Result>(StatusCodes.Status500InternalServerError)]
+        [HttpPost("{id}/return")]
+        public async Task<IActionResult> ReturnBorrowing(int id, CancellationToken cancellation)
+        {
+            var result = await _borrowServices.ReturnBorrowingByIdAsync(id, cancellation); 
+            if (result.IsSuccess)
+                return Ok( result);
 
-
-
+            return result.ErrorType switch
+            {
+                ErrorType.Conflict => Conflict(result),
+                ErrorType.NotFound => NotFound(result),
+                _ => StatusCode(StatusCodes.Status500InternalServerError, result)
+            };
+        }
+    }
 }

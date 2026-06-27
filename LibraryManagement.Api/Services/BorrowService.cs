@@ -17,17 +17,17 @@ namespace LibraryManagement.Api.Services
             _db = db;
         }
 
-        public  async Task<ResultT<int?>> BorrowBookAsync(BorrowBookRequestDto requestDto, CancellationToken cancellation)
+        public async Task<ResultT<int?>> BorrowBookAsync(BorrowBookRequestDto requestDto, CancellationToken cancellation)
         {
             if (requestDto.DueDate.Date <= DateTime.Today)
-                return ResultT< int?>.Failure("Due date must be after today.",ErrorType.Validation);
+                return ResultT<int?>.Failure("Due date must be after today.", ErrorType.Validation);
 
-            var isValidMember =await _db.Members.AnyAsync(m => m.Id == requestDto.MemberId , cancellation); 
+            var isValidMember = await _db.Members.AnyAsync(m => m.Id == requestDto.MemberId, cancellation);
             if (!isValidMember)
                 return ResultT<int?>.Failure("Member not found", ErrorType.NotFound);
 
-            var book = await _db.Books.FindAsync(requestDto.BookId ,cancellation);
-            if (book is null )
+            var book = await _db.Books.FindAsync(requestDto.BookId, cancellation);
+            if (book is null)
                 return ResultT<int?>.Failure("Book not found", ErrorType.NotFound);
             if (book.Status == BookStatus.Out)
                 return ResultT<int?>.Failure("This book not available at this time", ErrorType.Conflict);
@@ -37,11 +37,53 @@ namespace LibraryManagement.Api.Services
                 BookId = requestDto.BookId,
                 MemberId = requestDto.MemberId,
                 DueDate = requestDto.DueDate,
-            }; 
-            await _db.BorrowTransactions.AddAsync (borrowTransaction ,cancellation);
-            book.Status = BookStatus.Out;   
+            };
+            await _db.BorrowTransactions.AddAsync(borrowTransaction, cancellation);
+            book.Status = BookStatus.Out;
             await _db.SaveChangesAsync(cancellation);
-            return ResultT<int?>.Success(borrowTransaction.Id, "Book borrowing successfully"); 
+            return ResultT<int?>.Success(borrowTransaction.Id, "Book borrowing successfully");
+        }
+
+        public async Task<ResultT<BorrowTransactionDto>> GetBorrowingByIdAsync(int id, CancellationToken cancellation)
+        {
+            var borrowTransaction =
+                await _db.BorrowTransactions.Where(br => br.Id == id)
+                .Select(br => new BorrowTransactionDto
+                {
+                    Id = br.Id,
+                    BorrowDate = br.BorrowDate,
+                    DueDate = br.DueDate,
+                    ReturnDate = br.ReturnDate,
+                    Member = new MemberLookupDto
+                    {
+                        Id = br.MemberId,
+                        Name = br.Member.Name,
+                    } , 
+                    Book = new BookLookupDto
+                    {
+                        Id = br.BookId, 
+                        Title = br.Book.Title,  
+                    }
+                }).FirstOrDefaultAsync();
+
+            if (borrowTransaction is null)
+                return ResultT<BorrowTransactionDto>.Failure("Transaction not found", ErrorType.NotFound);
+
+            return ResultT<BorrowTransactionDto>.Success(borrowTransaction);
+        }
+
+        public async Task<Result> ReturnBorrowingByIdAsync(int id, CancellationToken cancellation)
+        {
+           var  borrowTransaction =await _db.BorrowTransactions
+                .Include(br => br.Book).FirstOrDefaultAsync(br => br.Id == id ,cancellation);
+            if (borrowTransaction is null)
+                return Result.Failure("Transaction not found", ErrorType.NotFound);
+            if (borrowTransaction.ReturnDate != null )
+                return Result.Failure("Borrow already returned", ErrorType.Conflict);
+            borrowTransaction.ReturnDate = DateTime.UtcNow;
+            borrowTransaction.Book.Status = BookStatus.In; 
+            await  _db.SaveChangesAsync(cancellation);
+            return Result.Success("Borrow returned successfully");
         }
     }
 }
