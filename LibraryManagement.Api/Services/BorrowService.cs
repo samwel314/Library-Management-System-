@@ -11,10 +11,12 @@ namespace LibraryManagement.Api.Services
     public class BorrowService : IBorrowService
     {
         private readonly LibraryDbContext _db;
+        private readonly IUserActivityLogService _activityLog;
 
-        public BorrowService(LibraryDbContext db)
+        public BorrowService(LibraryDbContext db, IUserActivityLogService activityLog)
         {
             _db = db;
+            _activityLog = activityLog;
         }
 
         public async Task<ResultT<int?>> BorrowBookAsync(BorrowBookRequestDto requestDto, CancellationToken cancellation)
@@ -40,6 +42,7 @@ namespace LibraryManagement.Api.Services
             };
             await _db.BorrowTransactions.AddAsync(borrowTransaction, cancellation);
             book.Status = BookStatus.Out;
+            await _activityLog.LogAsync($"Book Borrowed", cancellation);
             await _db.SaveChangesAsync(cancellation);
             return ResultT<int?>.Success(borrowTransaction.Id, "Book borrowing successfully");
         }
@@ -105,7 +108,8 @@ namespace LibraryManagement.Api.Services
             if (borrowTransaction.ReturnDate != null )
                 return Result.Failure("Borrow already returned", ErrorType.Conflict);
             borrowTransaction.ReturnDate = DateTime.UtcNow;
-            borrowTransaction.Book.Status = BookStatus.In; 
+            borrowTransaction.Book.Status = BookStatus.In;
+            await _activityLog.LogAsync( $"Book Returned (Transaction Id: {borrowTransaction.Id})", cancellation);
             await  _db.SaveChangesAsync(cancellation);
             return Result.Success("Borrow returned successfully");
         }

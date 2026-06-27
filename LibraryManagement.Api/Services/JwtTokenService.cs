@@ -27,7 +27,7 @@ namespace LibraryManagement.Api.Services
 
             var claims = new List<Claim>
             {
-                new (JwtRegisteredClaimNames.Sub , identity.Id) ,
+                new (ClaimTypes.NameIdentifier , identity.Id) ,
                 new (ClaimTypes.Name , identity.UserName!)
             };
 

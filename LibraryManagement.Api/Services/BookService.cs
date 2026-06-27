@@ -16,11 +16,13 @@ namespace LibraryManagement.Api.Services
     {
         private readonly LibraryDbContext _db;
         private readonly IFileStorageService _fileStorageService;
+        private readonly IUserActivityLogService _activityLog;
 
-        public BookService(LibraryDbContext db, IFileStorageService fileStorageService)
+        public BookService(LibraryDbContext db, IFileStorageService fileStorageService, IUserActivityLogService activityLog)
         {
             _db = db;
             _fileStorageService = fileStorageService;
+            _activityLog = activityLog;
         }
 
         public async Task<ResultT<int?>> CreateAsync(CreateBookDto requestDto, CancellationToken cancellation)
@@ -80,8 +82,8 @@ namespace LibraryManagement.Api.Services
                 BookAuthors = bookAuthors   
              };
              await  _db.Books.AddAsync(book , cancellation);
-
             await _db.SaveChangesAsync(cancellation);
+            await _activityLog.LogAsync($"Book Created", cancellation);
             return ResultT<int?>.Success(book.Id, "book created successfuly");
         }
 
@@ -101,6 +103,7 @@ namespace LibraryManagement.Api.Services
                 bookFilter.Page = 1;
             if (bookFilter.PageSize < 5)
                 bookFilter.PageSize = 5;
+
 
             var books =  await booksQuery.Select(b => new BookDto
             {
@@ -194,6 +197,8 @@ namespace LibraryManagement.Api.Services
             });
 
             await _db.BookAuthors.AddRangeAsync(bookAuthors, cancellation);
+            await _activityLog.LogAsync($"Book Updated (Id: {id}) - > Authors", cancellation);
+
             await _db.SaveChangesAsync(cancellation);
             return Result.Success("book updated successfuly"); 
         }
@@ -229,6 +234,7 @@ namespace LibraryManagement.Api.Services
             book.PublicationYear = requestDto.PublicationYear;
             book.CategoryId = requestDto.CategoryId;
             book.PublisherId = requestDto.PublisherId;
+            await _activityLog.LogAsync($"Book Updated (Id: {id}) - > BasicInfo", cancellation);
             await _db.SaveChangesAsync (cancellation);
             return Result.Success("book updated successfuly"); 
         }
@@ -249,6 +255,7 @@ namespace LibraryManagement.Api.Services
             var coverImageUrl = await _fileStorageService.SaveImageAsync(requestDto.CoverImage, cancellation);
             _fileStorageService.DeleteImage(book.CoverImageUrl!);        
             book.CoverImageUrl = coverImageUrl;
+            await _activityLog.LogAsync($"Book Updated (Id: {id}) - > cover Image", cancellation);
             await _db.SaveChangesAsync(cancellation);
             return Result.Success("book updated successfuly");
         }
@@ -264,6 +271,7 @@ namespace LibraryManagement.Api.Services
 
             _fileStorageService.DeleteImage(book.CoverImageUrl!);
             _db.Books.Remove(book);
+            await _activityLog.LogAsync($"Book Deleted (Id: {id})", cancellation);
             await _db.SaveChangesAsync(cancellation);
 
             return Result.Success("book deleted successfuly");

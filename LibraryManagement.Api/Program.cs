@@ -45,7 +45,11 @@ builder.Services.AddScoped<IAuthorService, AuthorService>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService> ();
 builder.Services.AddScoped<IMemberService, MemberService>();
 builder.Services.AddScoped<IBorrowService, BorrowService>();
-builder.Services.AddScoped<IUserService, UserService>(); 
+builder.Services.AddScoped<IUserService, UserService>();
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<IUserActivityLogService, UserActivityLogService>(); 
 // AddAuthentication & AddAuthorization
 builder.Services.AddAuthentication(options =>
 {

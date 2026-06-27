@@ -10,11 +10,13 @@ namespace LibraryManagement.Api.Services
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IJwtTokenService _jwtTokenService;
+        private readonly IUserActivityLogService _activityLog;
 
-        public IdentityService(UserManager<IdentityUser> userManager, IJwtTokenService jwtTokenService)
+        public IdentityService(UserManager<IdentityUser> userManager, IJwtTokenService jwtTokenService, IUserActivityLogService activityLog)
         {
             _userManager = userManager;
             _jwtTokenService = jwtTokenService;
+            _activityLog = activityLog;
         }
 
         public async Task<ResultT<JwtResultDto>> LoginAsync(LoginRequestDto requestDto)
@@ -31,12 +33,14 @@ namespace LibraryManagement.Api.Services
 
             if (!isPasswordValid)
             {
+                await _activityLog.LogAsync($"Try Login (Id: {user.Id})", default, true);
+
                 await _userManager.AccessFailedAsync(user);
                 return ResultT<JwtResultDto>.Failure("Invalid credentials", ErrorType.Unauthorized);
             }
 
             await _userManager.ResetAccessFailedCountAsync(user);
-
+            await _activityLog.LogAsync($"User Login (Id: {user.Id})", default, true);
             var jwtResultDto = await _jwtTokenService.GenerateToken(user); 
             return ResultT<JwtResultDto>.Success(jwtResultDto, "Login successful");
         }

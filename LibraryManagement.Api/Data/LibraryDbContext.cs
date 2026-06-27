@@ -18,6 +18,7 @@ namespace LibraryManagement.Api.Data
         public DbSet<Member> Members { get; set; }
         public DbSet<BorrowTransaction> BorrowTransactions { get; set; }
         public DbSet<BookAuthor> BookAuthors { get; set; }
+        public DbSet<UserActivityLog> UserActivityLogs  { get; set; }   
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

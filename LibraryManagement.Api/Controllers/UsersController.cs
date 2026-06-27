@@ -28,9 +28,9 @@ namespace LibraryManagement.Api.Controllers
         [ProducesResponseType<ResultT<string>>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<ResultT<string>>(StatusCodes.Status409Conflict)]
         [ProducesResponseType<ResultT<string>>(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateUser([FromBody] CreateUserRequestDto requestDto)
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserRequestDto requestDto , CancellationToken cancellation)
         {
-            var result = await _userService.CreateAsync(requestDto);
+            var result = await _userService.CreateAsync(requestDto ,cancellation );
             if (result.IsSuccess)
                 return CreatedAtRoute("GetUserById", new { id = result.Data }, result);
 
@@ -75,9 +75,9 @@ namespace LibraryManagement.Api.Controllers
         [ProducesResponseType<Result>(StatusCodes.Status404NotFound)]
         [ProducesResponseType<Result>(StatusCodes.Status409Conflict)]
         [ProducesResponseType<Result>(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateUser([FromRoute] string id, [FromBody] UpdateUserRequestDto requestDto)
+        public async Task<IActionResult> UpdateUser([FromRoute] string id, [FromBody] UpdateUserRequestDto requestDto , CancellationToken cancellation)
         {
-            var result = await _userService.UpdateAsync(id, requestDto);
+            var result = await _userService.UpdateAsync(id, requestDto ,cancellation );
             if (result.IsSuccess)
                 return Ok(result);
 
@@ -97,9 +97,9 @@ namespace LibraryManagement.Api.Controllers
         [ProducesResponseType<Result>(StatusCodes.Status404NotFound)]
         [ProducesResponseType<Result>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<Result>(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteById([FromRoute] string id)
+        public async Task<IActionResult> DeleteById([FromRoute] string id , CancellationToken cancellation)
         {
-            var result = await _userService.DeleteAsync(id);
+            var result = await _userService.DeleteAsync(id , cancellation) ;
             if (result.IsSuccess)
                 return Ok(result);
 

@@ -10,10 +10,12 @@ namespace LibraryManagement.Api.Services
     public class MemberService : IMemberService
     {
         private readonly LibraryDbContext _db;
+        private readonly IUserActivityLogService _activityLog;
 
-        public MemberService(LibraryDbContext db)
+        public MemberService(LibraryDbContext db, IUserActivityLogService activityLog)
         {
             _db = db;
+            _activityLog = activityLog;
         }
 
         public async Task<ResultT<int?>> CreateAsync(MemberRequestDto requestDto, CancellationToken cancellation)
@@ -31,6 +33,7 @@ namespace LibraryManagement.Api.Services
             };
 
             await _db.Members.AddAsync(member, cancellation);
+            await _activityLog.LogAsync($"Member Created ", cancellation);
             await _db.SaveChangesAsync(cancellation);
 
             return ResultT<int?>.Success(member.Id, "Member created successfully");
@@ -88,6 +91,7 @@ namespace LibraryManagement.Api.Services
             member.Name = requestDto.Name;
             member.Phone = requestDto.Phone;
             member.Email = requestDto.Email;
+            await _activityLog.LogAsync($"Member Updated (Id: {member.Id})", cancellation);
 
             await _db.SaveChangesAsync(cancellation);
 
@@ -108,6 +112,7 @@ namespace LibraryManagement.Api.Services
                 return Result.Failure("Cannot delete member because they have borrow history.", ErrorType.Validation);
 
             _db.Members.Remove(member);
+            await _activityLog.LogAsync($"Member Deleted (Id: {id})", cancellation);
             await _db.SaveChangesAsync(cancellation);
 
             return Result.Success("Member deleted successfully");

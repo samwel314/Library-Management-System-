@@ -11,14 +11,16 @@ namespace LibraryManagement.Api.Services
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IUserActivityLogService _activityLog;
 
-        public UserService(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
+        public UserService(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IUserActivityLogService activityLog)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _activityLog = activityLog;
         }
 
-        public async Task<ResultT<string>> CreateAsync(CreateUserRequestDto requestDto)
+        public async Task<ResultT<string>> CreateAsync(CreateUserRequestDto requestDto, CancellationToken cancellation)
         {
           
             var roleExists = await _roleManager.RoleExistsAsync(requestDto.Role);
@@ -44,6 +46,7 @@ namespace LibraryManagement.Api.Services
             }
 
             await _userManager.AddToRoleAsync(user, requestDto.Role);
+            await _activityLog.LogAsync($"User Created " , cancellation, true);
 
             return ResultT<string>.Success(user.Id, "User created successfully.");
         }
@@ -87,7 +90,7 @@ namespace LibraryManagement.Api.Services
             return ResultT<UserDto>.Success(userDto);
         }
 
-        public async Task<Result> UpdateAsync(string id, UpdateUserRequestDto requestDto)
+        public async Task<Result> UpdateAsync(string id, UpdateUserRequestDto requestDto ,CancellationToken cancellation)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
@@ -115,11 +118,12 @@ namespace LibraryManagement.Api.Services
             var currentRoles = await _userManager.GetRolesAsync(user);
             await _userManager.RemoveFromRolesAsync(user, currentRoles);
             await _userManager.AddToRoleAsync(user, requestDto.Role);
+            await _activityLog.LogAsync($"User Updated (Id: {user.Id})", cancellation, true);
 
             return Result.Success("User updated successfully.");
         }
 
-        public async Task<Result> DeleteAsync(string id)
+        public async Task<Result> DeleteAsync(string id, CancellationToken cancellation)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
@@ -129,9 +133,8 @@ namespace LibraryManagement.Api.Services
             var result = await _userManager.DeleteAsync(user);
             if (!result.Succeeded)
                 return Result.Failure("Failed to delete user.", ErrorType.Validation);
-
+            await _activityLog.LogAsync($"User Deleted (Id: {user.Id})", cancellation, true);
             return Result.Success("User deleted successfully.");
         }
     }
-
 }

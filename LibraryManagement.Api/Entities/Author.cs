@@ -8,5 +8,4 @@
 
         public ICollection<BookAuthor> BookAuthors { get; set; } = new List<BookAuthor>();
     }
-
 }

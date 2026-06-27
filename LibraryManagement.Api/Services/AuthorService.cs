@@ -11,10 +11,12 @@ namespace LibraryManagement.Api.Services
     public class AuthorService : IAuthorService
     {
         private readonly LibraryDbContext _db;
+        private readonly IUserActivityLogService _activityLog;
 
-        public AuthorService(LibraryDbContext db)
+        public AuthorService(LibraryDbContext db, IUserActivityLogService activityLog)
         {
             _db = db;
+            _activityLog = activityLog;
         }
 
         public async Task<ResultT<int?>> CreateAsync(AuthorRequestDto requestDto, CancellationToken cancellation)
@@ -27,6 +29,8 @@ namespace LibraryManagement.Api.Services
                 Bio = requestDto.Bio,   
             };
           await  _db.Authors.AddAsync(author, cancellation);
+            await _activityLog.LogAsync($"Author Created ", cancellation);
+
             await _db.SaveChangesAsync(cancellation);
             return ResultT<int?>.Success(author.Id, "Author created successfully");
         }
@@ -72,6 +76,7 @@ namespace LibraryManagement.Api.Services
 
             author.Name = requestDto.Name;
             author.Bio = requestDto.Bio;
+            await _activityLog.LogAsync($"Author Updated (Id: {author.Id})", cancellation);
             await _db.SaveChangesAsync(cancellation);
             return Result.Success("Author updated successfully");
         }
@@ -84,6 +89,7 @@ namespace LibraryManagement.Api.Services
             if (hasBooks)
                 return Result.Failure($"Cannot delete Author because it has associated books.", ErrorType.Validation);
             _db.Authors.Remove(author);
+            await _activityLog.LogAsync($"Author Deleted (Id: {id})", cancellation);
             await _db.SaveChangesAsync(cancellation);
 
             return Result.Success("Author deleted successfully");

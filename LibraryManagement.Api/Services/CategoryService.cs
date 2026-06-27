@@ -12,10 +12,12 @@ namespace LibraryManagement.Api.Services
     public class CategoryService : ICategoryService
     {
         private readonly LibraryDbContext _db;
+        private readonly IUserActivityLogService _activityLog;
 
-        public CategoryService(LibraryDbContext db)
+        public CategoryService(LibraryDbContext db, IUserActivityLogService activityLog)
         {
             _db = db;
+            _activityLog = activityLog;
         }
 
         public async Task<ResultT<int?>> CreateAsync(CategoryRequestDto requestDto , CancellationToken cancellation)
@@ -35,7 +37,8 @@ namespace LibraryManagement.Api.Services
                 Name = requestDto.Name  ,
                 ParentCategoryId = requestDto.ParentId
             };
-            await _db.Categories.AddAsync(category , cancellation);   
+            await _db.Categories.AddAsync(category , cancellation);
+            await _activityLog.LogAsync($"Category Created ", cancellation);
             await _db.SaveChangesAsync(cancellation);
             return ResultT<int?>.Success(category.Id , "category created successfuly"); 
         }
@@ -106,6 +109,7 @@ namespace LibraryManagement.Api.Services
             }
             category.Name = requestDto.Name;    
             category.ParentCategoryId = requestDto.ParentId;
+            await _activityLog.LogAsync($"Category Updated (Id: {category.Id})", cancellation);
             await _db.SaveChangesAsync(cancellation);
             return Result.Success("Category updated successfuly");
         }
@@ -123,6 +127,7 @@ namespace LibraryManagement.Api.Services
                 return Result.Failure($"Cannot delete because it has books", ErrorType.Validation);
 
             _db.Categories.Remove(category);
+            await _activityLog.LogAsync($"Category Deleted (Id: {id})", cancellation);
             await _db.SaveChangesAsync(cancellation);
 
             return Result.Success("Category deleted successfuly");

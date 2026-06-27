@@ -11,10 +11,12 @@ namespace LibraryManagement.Api.Services
     public class PublisherService : IPublisherService
     {
         private readonly LibraryDbContext _db;
+        private readonly IUserActivityLogService _activityLog;
 
-        public PublisherService(LibraryDbContext db)
+        public PublisherService(LibraryDbContext db, IUserActivityLogService activityLog)
         {
             _db = db;
+            _activityLog = activityLog;
         }
 
         public async Task<ResultT<int?>> CreateAsync(PublisherRequestDto requestDto, CancellationToken cancellation)
@@ -32,6 +34,8 @@ namespace LibraryManagement.Api.Services
                 Country = requestDto.Country,   
             };
             await _db.Publishers.AddAsync(publisher , cancellation);
+            await _activityLog.LogAsync($"Publisher Created ", cancellation);
+
             await _db.SaveChangesAsync(cancellation);
             return ResultT<int?>.Success(publisher.Id, "Publisher created successfully");
         }
@@ -85,6 +89,7 @@ namespace LibraryManagement.Api.Services
             publisher.Name = requestDto.Name;
             publisher.ContactInfo = requestDto.ContactInfo;
             publisher.Country = requestDto.Country;
+            await _activityLog.LogAsync($"Publisher Updated (Id: {publisher.Id})", cancellation);
             await _db.SaveChangesAsync(cancellation);
             return Result.Success("Publisher updated successfully");
         }
@@ -97,6 +102,7 @@ namespace LibraryManagement.Api.Services
             if (hasBooks)
                 return Result.Failure($"Cannot delete publisher because it has associated books.", ErrorType.Validation);
             _db.Publishers.Remove(publisher);
+            await _activityLog.LogAsync($"Publisher Deleted (Id: {id})", cancellation);
             await _db.SaveChangesAsync(cancellation);
 
             return Result.Success("Publisher deleted successfuly");
