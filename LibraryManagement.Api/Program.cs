@@ -44,6 +44,7 @@ builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IAuthorService, AuthorService>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService> ();
 builder.Services.AddScoped<IMemberService, MemberService>();
+builder.Services.AddScoped<IBorrowService, BorrowService>(); 
 // AddAuthentication & AddAuthorization
 builder.Services.AddAuthentication(options =>
 {
