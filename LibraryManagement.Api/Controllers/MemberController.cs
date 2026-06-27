@@ -1,6 +1,7 @@
 ﻿using LibraryManagement.Api.DTOs;
 using LibraryManagement.Api.Services.Interfaces;
 using LibraryManagement.Api.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,7 +18,7 @@ namespace LibraryManagement.Api.Controllers
         {
             _memberService = memberService;
         }
-
+        [Authorize(Roles = "Administrator,Librarian")]
         [EndpointName("CreateMember")]
         [EndpointDescription("Creates a new Member.")]
         [Consumes("application/json")]
@@ -37,6 +38,7 @@ namespace LibraryManagement.Api.Controllers
             return StatusCode(StatusCodes.Status500InternalServerError, result);
         }
 
+        [Authorize(Roles = "Administrator,Librarian,Staff")]
         [EndpointName("GetMemberById")]
         [EndpointDescription("Retrieves a Member by its identifier.")]
         [ProducesResponseType<ResultT<MemberDto>>(StatusCodes.Status200OK)]
@@ -52,6 +54,8 @@ namespace LibraryManagement.Api.Controllers
             return NotFound(result);
         }
 
+
+        [Authorize(Roles = "Administrator,Librarian,Staff")]
         [EndpointName("GetAllMembers")]
         [EndpointDescription("Retrieves all members.")]
         [ProducesResponseType<ResultT<IEnumerable<MemberDto>>>(StatusCodes.Status200OK)]
@@ -62,6 +66,7 @@ namespace LibraryManagement.Api.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "Administrator,Librarian")]
         [EndpointName("UpdateMember")]
         [EndpointDescription("Updates an existing Member.")]
         [Consumes("application/json")]
@@ -70,10 +75,7 @@ namespace LibraryManagement.Api.Controllers
         [ProducesResponseType<Result>(StatusCodes.Status404NotFound)]
         [ProducesResponseType<Result>(StatusCodes.Status500InternalServerError)]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateMember(
-            int id,
-            MemberRequestDto requestDto,
-            CancellationToken cancellation)
+        public async Task<IActionResult> UpdateMember(int id,MemberRequestDto requestDto,CancellationToken cancellation)
         {
             var result = await _memberService.UpdateAsync(id, requestDto, cancellation);
 
@@ -88,6 +90,7 @@ namespace LibraryManagement.Api.Controllers
             };
         }
 
+        [Authorize(Roles = "Administrator")]
         [EndpointName("DeleteMember")]
         [EndpointDescription("Deletes a Member if it has no borrowing history.")]
         [ProducesResponseType<Result>(StatusCodes.Status200OK)]
@@ -109,6 +112,8 @@ namespace LibraryManagement.Api.Controllers
                 _ => StatusCode(StatusCodes.Status500InternalServerError, result)
             };
         }
+
+        [Authorize(Roles = "Administrator,Librarian,Staff")]
         [EndpointName("GetMemberBorrowHistory")]
         [EndpointDescription("Retrieves the borrowing history of a member.")]
         [ProducesResponseType<ResultT<IEnumerable<MemberBorrowTransactionDto>>>(StatusCodes.Status200OK)]

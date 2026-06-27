@@ -1,6 +1,7 @@
 ﻿using LibraryManagement.Api.DTOs;
 using LibraryManagement.Api.Services.Interfaces;
 using LibraryManagement.Api.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TLibraryManagement.Api.Services;
@@ -17,7 +18,7 @@ namespace LibraryManagement.Api.Controllers
         {
             _borrowServices = borrowServices;
         }
-
+        [Authorize(Roles = "Administrator,Librarian")]
         [EndpointName("BorrowBook")]
         [EndpointDescription("Borrows a book for a library member.")]
         [Consumes("application/json")]
@@ -41,6 +42,8 @@ namespace LibraryManagement.Api.Controllers
                 _ => StatusCode(StatusCodes.Status500InternalServerError, result)
             };
         }
+
+        [Authorize(Roles = "Administrator,Librarian,Staff")]
         [EndpointDescription("Retrieves a borrowing transaction by its identifier..")]
         [ProducesResponseType<ResultT<BorrowTransactionDto>>(StatusCodes.Status200OK)]
         [ProducesResponseType<Result>(StatusCodes.Status404NotFound)]
@@ -53,6 +56,8 @@ namespace LibraryManagement.Api.Controllers
 
             return NotFound(result);
         }
+
+        [Authorize(Roles = "Administrator,Librarian")]
         [EndpointName("ReturnBorrowing")]
         [EndpointDescription("Returns a borrowed book by its borrowing transaction identifier.")]
         [ProducesResponseType<Result>(StatusCodes.Status200OK)]
@@ -73,6 +78,8 @@ namespace LibraryManagement.Api.Controllers
                 _ => StatusCode(StatusCodes.Status500InternalServerError, result)
             };
         }
+
+        [Authorize(Roles = "Administrator,Librarian,Staff")]
         [EndpointName("GetAllActiveBorrowings")]
         [EndpointDescription("Retrieves all active borrowings.")]
         [ProducesResponseType<ResultT<IEnumerable<BorrowTransactionDto>>>(StatusCodes.Status200OK)]

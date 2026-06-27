@@ -1,6 +1,7 @@
 ﻿using LibraryManagement.Api.DTOs;
 using LibraryManagement.Api.Services.Interfaces;
 using LibraryManagement.Api.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TLibraryManagement.Api.Services;
 
@@ -17,6 +18,7 @@ namespace LibraryManagement.Api.Controllers
         {
             _authorService = authorService;
         }
+        [Authorize(Roles = "Administrator,Librarian")]
         [EndpointName("CreateAuthor")]
         [EndpointDescription("Creates a new Author.")]
         [Consumes("application/json")]
@@ -37,7 +39,7 @@ namespace LibraryManagement.Api.Controllers
                 _ => StatusCode(StatusCodes.Status500InternalServerError, result)
             };
         }
-
+        [Authorize(Roles = "Administrator,Librarian,Staff")]
         [EndpointName("GetAuthorById")]
         [EndpointDescription("Retrieves a Author by its identifier.")]
         [ProducesResponseType<ResultT<AuthorDto>>(StatusCodes.Status200OK)]
@@ -51,6 +53,8 @@ namespace LibraryManagement.Api.Controllers
 
             return NotFound(result);
         }
+
+        [Authorize(Roles = "Administrator,Librarian,Staff")]
         [EndpointName("GetAllAuthors")]
         [EndpointDescription("Retrieves all authors.")]
         [ProducesResponseType<ResultT<IEnumerable<AuthorDto>>>(StatusCodes.Status200OK)]
@@ -60,6 +64,7 @@ namespace LibraryManagement.Api.Controllers
             var result = await _authorService.GetAllAsync(cancellation);
             return Ok(result);
         }
+        [Authorize(Roles = "Administrator,Librarian,Staff")]
         [EndpointName("GetAuthorsLookup")]
         [EndpointDescription("Retrieves a lightweight list of authors for lookup purposes.")]
         [ProducesResponseType<ResultT<IEnumerable<AuthorLookupDto>>>(StatusCodes.Status200OK)]
@@ -69,6 +74,7 @@ namespace LibraryManagement.Api.Controllers
             var result = await _authorService.GetAllLookupAsync(cancellation);
             return Ok(result);
         }
+        [Authorize(Roles = "Administrator,Librarian")]
         [EndpointName("UpdateAuthor")]
         [EndpointDescription("Updates an existing Author.")]
         [Consumes("application/json")]
@@ -91,7 +97,7 @@ namespace LibraryManagement.Api.Controllers
                 _ => StatusCode(StatusCodes.Status500InternalServerError, result)
             };
         }
-
+        [Authorize(Roles = "Administrator")]
         [EndpointName("DeleteAuthor")]
         [EndpointDescription("Deletes an author if the author has no associated books.")]
         [ProducesResponseType<Result>(StatusCodes.Status200OK)]

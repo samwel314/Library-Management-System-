@@ -1,6 +1,7 @@
 ﻿using LibraryManagement.Api.DTOs;
 using LibraryManagement.Api.Services.Interfaces;
 using LibraryManagement.Api.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TLibraryManagement.Api.Services;
@@ -27,6 +28,7 @@ namespace LibraryManagement.Api.Controllers
         [ProducesResponseType<ResultT<int?>>(StatusCodes.Status409Conflict)]
         [ProducesResponseType<ResultT<int?>>(StatusCodes.Status500InternalServerError)]
         [HttpPost]
+        [Authorize(Roles = "Administrator,Librarian")]
         public async Task<IActionResult> CreateBook
         ([FromForm] CreateBookDto requestDto, CancellationToken cancellation)
         {
@@ -47,6 +49,7 @@ namespace LibraryManagement.Api.Controllers
         [ProducesResponseType<ResultT<BookDetailsDto>>(StatusCodes.Status200OK)]
         [ProducesResponseType<Result>(StatusCodes.Status404NotFound)]
         [HttpGet("{id}", Name = "GetBookById")]
+        [Authorize(Roles = "Administrator,Librarian,Staff")]
         public async Task<IActionResult> GetById(int id, CancellationToken cancellation)
         {
             var result  = await _bookService.GetByIdAsync(id, cancellation);  
@@ -59,6 +62,7 @@ namespace LibraryManagement.Api.Controllers
         [EndpointDescription("Retrieves all books.")]
         [ProducesResponseType<ResultT<IEnumerable<BookDto>>>(StatusCodes.Status200OK)]
         [HttpGet]
+        [Authorize(Roles = "Administrator,Librarian,Staff")]
         public async Task<IActionResult> GetAll( [FromQuery] BookFilterDto bookFilter , CancellationToken cancellation)
         {
             var result = await _bookService.GetAllAsync(bookFilter ,cancellation);
@@ -74,6 +78,7 @@ namespace LibraryManagement.Api.Controllers
         [ProducesResponseType<Result>(StatusCodes.Status409Conflict)]
         [ProducesResponseType<Result>(StatusCodes.Status500InternalServerError)]
         [HttpPut("{id}")]
+        [Authorize(Roles = "Administrator,Librarian")]
         public async Task<IActionResult> UpdateBasicInfo(int id, UpdateBookBasicInfoDto requestDto,
                CancellationToken cancellation)
         {
@@ -98,6 +103,7 @@ namespace LibraryManagement.Api.Controllers
         [ProducesResponseType<Result>(StatusCodes.Status404NotFound)]
         [ProducesResponseType<Result>(StatusCodes.Status500InternalServerError)]
         [HttpPut("{id}/authors")]
+        [Authorize(Roles = "Administrator,Librarian")]
         public async Task<IActionResult> UpdateBookAuthors(int id, UpdateBookAuthorsDto requestDto,
             CancellationToken cancellation)
         {
@@ -121,6 +127,7 @@ namespace LibraryManagement.Api.Controllers
         [ProducesResponseType<Result>(StatusCodes.Status404NotFound)]
         [ProducesResponseType<Result>(StatusCodes.Status500InternalServerError)]
         [HttpPut("{id}/cover-image")]
+        [Authorize(Roles = "Administrator,Librarian")]
         public async Task<IActionResult> UpdateBookCoverImage(int id, [FromForm] UpdateBookCoveImageDto requestDto,
             CancellationToken cancellation)
         {
@@ -135,6 +142,7 @@ namespace LibraryManagement.Api.Controllers
                 _ => StatusCode(StatusCodes.Status500InternalServerError, result)
             };
         }
+        [Authorize(Roles = "Administrator")]
         [EndpointName("DeleteBook")]
         [EndpointDescription("Deletes a Book if it has no borrow history.")]
         [ProducesResponseType<Result>(StatusCodes.Status200OK)]
@@ -160,6 +168,7 @@ namespace LibraryManagement.Api.Controllers
         [ProducesResponseType<ResultT<IEnumerable<BookBorrowTransactionDto>>>(StatusCodes.Status200OK)]
         [ProducesResponseType<Result>(StatusCodes.Status404NotFound)]
         [HttpGet("{id}/borrowings")]
+        [Authorize(Roles = "Administrator,Librarian,Staff")]
         public async Task<IActionResult> GetBorrowHistory(int id, CancellationToken cancellation)
         {
             var result = await _bookService.GetBorrowHistoryAsync(id, cancellation);

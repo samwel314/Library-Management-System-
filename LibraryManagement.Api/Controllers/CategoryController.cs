@@ -1,6 +1,7 @@
 ﻿using LibraryManagement.Api.DTOs;
 using LibraryManagement.Api.Services.Interfaces;
 using LibraryManagement.Api.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +18,7 @@ namespace LibraryManagement.Api.Controllers
         {
             _categoryService = categoryService;
         }
+        [Authorize(Roles = "Administrator,Librarian")]
         [EndpointName("CreateCategory")]
         [EndpointDescription("Creates a new category.")]
         [Consumes("application/json")]
@@ -42,6 +44,8 @@ namespace LibraryManagement.Api.Controllers
             };
         }
 
+
+        [Authorize(Roles = "Administrator,Librarian,Staff")]
         [EndpointName("GetCategoryById")]
         [EndpointDescription("Retrieves a category by its identifier.")]
         [ProducesResponseType<ResultT<CategoryDto>>(StatusCodes.Status200OK)]
@@ -55,6 +59,9 @@ namespace LibraryManagement.Api.Controllers
 
             return NotFound(result);    
         }
+
+
+        [Authorize(Roles = "Administrator,Librarian,Staff")]
         [EndpointName("GetAllCategories")]
         [EndpointDescription("Retrieves all categories.")]
         [ProducesResponseType<ResultT<IEnumerable<CategoryDto>>>(StatusCodes.Status200OK)]
@@ -64,6 +71,8 @@ namespace LibraryManagement.Api.Controllers
             var result = await _categoryService.GetAllAsync( cancellation);
             return Ok(result);
         }
+
+        [Authorize(Roles = "Administrator,Librarian,Staff")]
         [EndpointName("GetCategoryLookup")]
         [EndpointDescription("Retrieves a lightweight list of categories for lookup purposes.")]
         [ProducesResponseType<ResultT<IEnumerable<CategoryLookupDto>>>(StatusCodes.Status200OK)]
@@ -73,6 +82,8 @@ namespace LibraryManagement.Api.Controllers
             var result = await _categoryService.GetAllLookupAsync(cancellation);
             return Ok(result);
         }
+
+        [Authorize(Roles = "Administrator,Librarian")]
         [EndpointName("UpdateCategory")]
         [EndpointDescription("Updates an existing category.")]
         [Consumes("application/json")]
@@ -98,6 +109,8 @@ namespace LibraryManagement.Api.Controllers
             };
         }
 
+
+        [Authorize(Roles = "Administrator")]
         [EndpointName("DeleteCategory")]
         [EndpointDescription("Deletes a category if it has no books or subcategories.")]
         [ProducesResponseType<Result>(StatusCodes.Status200OK)]

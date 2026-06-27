@@ -1,6 +1,7 @@
 ﻿using LibraryManagement.Api.DTOs;
 using LibraryManagement.Api.Services.Interfaces;
 using LibraryManagement.Api.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TLibraryManagement.Api.Services;
 
@@ -17,6 +18,9 @@ namespace LibraryManagement.Api.Controllers
         {
             _publisherService = publisherService;
         }
+
+
+        [Authorize(Roles = "Administrator,Librarian")]
         [EndpointName("CreatePublisher")]
         [EndpointDescription("Creates a new Publisher.")]
         [Consumes("application/json")]
@@ -40,6 +44,7 @@ namespace LibraryManagement.Api.Controllers
             };
         }
 
+        [Authorize(Roles = "Administrator,Librarian,Staff")]
         [EndpointName("GetPublisherById")]
         [EndpointDescription("Retrieves a Publisher by its identifier.")]
         [ProducesResponseType<ResultT<PublisherDto>>(StatusCodes.Status200OK)]
@@ -53,6 +58,8 @@ namespace LibraryManagement.Api.Controllers
 
             return NotFound(result);
         }
+
+        [Authorize(Roles = "Administrator,Librarian,Staff")]
         [EndpointName("GetAllPublishers")]
         [EndpointDescription("Retrieves all publishers.")]
         [ProducesResponseType<ResultT<IEnumerable<PublisherDto>>>(StatusCodes.Status200OK)]
@@ -62,6 +69,8 @@ namespace LibraryManagement.Api.Controllers
             var result = await _publisherService.GetAllAsync(cancellation);
             return Ok(result);
         }
+
+        [Authorize(Roles = "Administrator,Librarian,Staff")]
         [EndpointName("GetpublishersLookup")]
         [EndpointDescription("Retrieves a lightweight list of publishers for lookup purposes.")]
         [ProducesResponseType<ResultT<IEnumerable<PublisherLookupDto>>>(StatusCodes.Status200OK)]
@@ -71,6 +80,8 @@ namespace LibraryManagement.Api.Controllers
             var result = await _publisherService.GetAllLookupAsync(cancellation);
             return Ok(result);
         }
+
+        [Authorize(Roles = "Administrator,Librarian")]
         [EndpointName("UpdatePublisher")]
         [EndpointDescription("Updates an existing Publisher.")]
         [Consumes("application/json")]
@@ -96,6 +107,7 @@ namespace LibraryManagement.Api.Controllers
             };
         }
 
+        [Authorize(Roles = "Administrator")]
         [EndpointName("DeletePublisher")]
         [EndpointDescription("Deletes a Publisher if it has no books.")]
         [ProducesResponseType<Result>(StatusCodes.Status200OK)]
