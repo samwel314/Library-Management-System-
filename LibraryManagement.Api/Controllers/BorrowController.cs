@@ -4,7 +4,7 @@ using LibraryManagement.Api.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using TLibraryManagement.Api.Services;
+using LibraryManagement.Api.Services;
 
 namespace LibraryManagement.Api.Controllers
 {

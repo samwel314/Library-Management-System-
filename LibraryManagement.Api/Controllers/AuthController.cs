@@ -18,7 +18,7 @@ namespace Tricycle.Api.Controllers
             _identityService = identityService;
         }
 
-        [EndpointName("LoginClient")]
+        [EndpointName("UserLogin")]
         [EndpointDescription("Authenticates a user using email and password and returns a JWT access token.")]
         [Consumes("application/json")]
         [ProducesResponseType<ResultT<JwtResultDto>>(StatusCodes.Status200OK)]

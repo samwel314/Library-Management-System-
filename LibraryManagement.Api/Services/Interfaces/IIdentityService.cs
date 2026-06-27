@@ -6,6 +6,6 @@ namespace LibraryManagement.Api.Services.Interfaces
 {
     public interface IIdentityService
     {
-        Task<Result> LoginAsync(LoginRequestDto requestDto); 
+        Task<ResultT<JwtResultDto>> LoginAsync(LoginRequestDto requestDto); 
     }
 }

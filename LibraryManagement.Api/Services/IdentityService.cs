@@ -4,7 +4,7 @@ using LibraryManagement.Api.Shared;
 using Microsoft.AspNetCore.Identity;
 
 
-namespace TLibraryManagement.Api.Services
+namespace LibraryManagement.Api.Services
 {
     public class IdentityService : IIdentityService
     {
@@ -17,22 +17,22 @@ namespace TLibraryManagement.Api.Services
             _jwtTokenService = jwtTokenService;
         }
 
-        public async Task<Result> LoginAsync(LoginRequestDto requestDto)
+        public async Task<ResultT<JwtResultDto>> LoginAsync(LoginRequestDto requestDto)
         {
             var user = await _userManager.FindByNameAsync(requestDto.Email);
 
             if (user == null)
-                return Result.Failure("Invalid credentials", ErrorType.Unauthorized);
+                return ResultT<JwtResultDto>.Failure("Invalid credentials", ErrorType.Unauthorized);
 
             if (await _userManager.IsLockedOutAsync(user))
-                return Result.Failure("Account is locked. Try later", ErrorType.Forbidden);
+                return ResultT<JwtResultDto>.Failure("Account is locked. Try later", ErrorType.Forbidden);
 
             var isPasswordValid = await _userManager.CheckPasswordAsync(user, requestDto.Password);
 
             if (!isPasswordValid)
             {
                 await _userManager.AccessFailedAsync(user);
-                return Result.Failure("Invalid credentials", ErrorType.Unauthorized);
+                return ResultT<JwtResultDto>.Failure("Invalid credentials", ErrorType.Unauthorized);
             }
 
             await _userManager.ResetAccessFailedCountAsync(user);
@@ -42,4 +42,5 @@ namespace TLibraryManagement.Api.Services
         }
 
     }
+
 }

@@ -6,7 +6,7 @@ using LibraryManagement.Api.Shared;
 using Microsoft.EntityFrameworkCore;
 
 
-namespace TLibraryManagement.Api.Services
+namespace LibraryManagement.Api.Services
 {
     public class AuthorService : IAuthorService
     {

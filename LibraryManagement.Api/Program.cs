@@ -11,7 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using System.Text;
 using System.Text.Json.Serialization;
-using TLibraryManagement.Api.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
@@ -44,7 +44,8 @@ builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IAuthorService, AuthorService>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService> ();
 builder.Services.AddScoped<IMemberService, MemberService>();
-builder.Services.AddScoped<IBorrowService, BorrowService>(); 
+builder.Services.AddScoped<IBorrowService, BorrowService>();
+builder.Services.AddScoped<IUserService, UserService>(); 
 // AddAuthentication & AddAuthorization
 builder.Services.AddAuthentication(options =>
 {
