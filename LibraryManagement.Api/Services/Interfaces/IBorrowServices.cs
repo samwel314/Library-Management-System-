@@ -8,6 +8,6 @@ namespace LibraryManagement.Api.Services.Interfaces
         Task<ResultT<int?>> BorrowBookAsync(BorrowBookRequestDto requestDto , CancellationToken cancellation);
         Task<ResultT<BorrowTransactionDto>> GetBorrowingByIdAsync(int id , CancellationToken cancellation);
         Task<Result> ReturnBorrowingByIdAsync(int id, CancellationToken cancellation);
-
+        Task<ResultT<IEnumerable<BorrowTransactionDto>>> GetActiveBorrowingsAsync(  CancellationToken cancellation);
     }
 }

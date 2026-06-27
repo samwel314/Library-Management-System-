@@ -73,5 +73,15 @@ namespace LibraryManagement.Api.Controllers
                 _ => StatusCode(StatusCodes.Status500InternalServerError, result)
             };
         }
+        [EndpointName("GetAllActiveBorrowings")]
+        [EndpointDescription("Retrieves all active borrowings.")]
+        [ProducesResponseType<ResultT<IEnumerable<BorrowTransactionDto>>>(StatusCodes.Status200OK)]
+        [HttpGet("active")]
+        public async Task<IActionResult> GetAllActiveBorrowings(CancellationToken cancellation)
+        {
+            var result = await _borrowServices.GetActiveBorrowingsAsync(cancellation);
+            return Ok(result);
+        }
+
     }
 }

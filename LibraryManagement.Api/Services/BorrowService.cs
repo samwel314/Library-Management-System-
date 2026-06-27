@@ -44,10 +44,34 @@ namespace LibraryManagement.Api.Services
             return ResultT<int?>.Success(borrowTransaction.Id, "Book borrowing successfully");
         }
 
+        public async Task<ResultT<IEnumerable<BorrowTransactionDto>>> GetActiveBorrowingsAsync(CancellationToken cancellation)
+        {
+            var activeBorrowTransactions = await _db.BorrowTransactions.AsNoTracking()
+                .Where(br => br.ReturnDate == null).Select(br => new BorrowTransactionDto
+            {
+                Id = br.Id,
+                BorrowDate = br.BorrowDate,
+                DueDate = br.DueDate,
+                ReturnDate = br.ReturnDate,
+                Member = new MemberLookupDto
+                {
+                    Id = br.MemberId,
+                    Name = br.Member.Name,
+                },
+                Book = new BookLookupDto
+                {
+                    Id = br.BookId,
+                    Title = br.Book.Title,
+                }
+            }).ToListAsync(cancellation);
+
+            return ResultT<IEnumerable<BorrowTransactionDto>>.Success(activeBorrowTransactions); 
+        }
+
         public async Task<ResultT<BorrowTransactionDto>> GetBorrowingByIdAsync(int id, CancellationToken cancellation)
         {
             var borrowTransaction =
-                await _db.BorrowTransactions.Where(br => br.Id == id)
+                await _db.BorrowTransactions.Where(br => br.Id == id).OrderBy(br => br.DueDate)
                 .Select(br => new BorrowTransactionDto
                 {
                     Id = br.Id,
