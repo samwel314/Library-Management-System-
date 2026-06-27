@@ -82,8 +82,8 @@ namespace LibraryManagement.Api.Services
                 BookAuthors = bookAuthors   
              };
              await  _db.Books.AddAsync(book , cancellation);
-            await _db.SaveChangesAsync(cancellation);
             await _activityLog.LogAsync($"Book Created", cancellation);
+            await _db.SaveChangesAsync(cancellation);
             return ResultT<int?>.Success(book.Id, "book created successfuly");
         }
 
