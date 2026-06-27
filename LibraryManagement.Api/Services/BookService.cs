@@ -268,7 +268,40 @@ namespace LibraryManagement.Api.Services
 
             return Result.Success("book deleted successfuly");
         }
+        public async Task<ResultT<IEnumerable<BookBorrowTransactionDto>>> GetBorrowHistoryAsync(
+    int id,
+    CancellationToken cancellation)
+        {
+            var bookExists = await _db.Books.AnyAsync(b => b.Id == id, cancellation);
+
+            if (!bookExists)
+                return ResultT<IEnumerable<BookBorrowTransactionDto>>
+                    .Failure("Book not found", ErrorType.NotFound);
+
+            var bookBorrowTransactions = await _db.BorrowTransactions
+                .AsNoTracking()
+                .Where(bt => bt.BookId == id)
+                .OrderByDescending(bt => bt.BorrowDate)
+                .Select(bt => new BookBorrowTransactionDto
+                {
+                    Id = bt.Id,
+                    BorrowDate = bt.BorrowDate,
+                    DueDate = bt.DueDate,
+                    ReturnDate = bt.ReturnDate,
+                    Member = new MemberLookupDto
+                    {
+                        Id = bt.MemberId,
+                        Name = bt.Member.Name
+                    }
+                })
+                .ToListAsync(cancellation);
+
+            return ResultT<IEnumerable<BookBorrowTransactionDto>>
+                .Success(bookBorrowTransactions);
+        }
     }
+
+
     
 }
 

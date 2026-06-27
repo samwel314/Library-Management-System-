@@ -155,5 +155,19 @@ namespace LibraryManagement.Api.Controllers
                 _ => StatusCode(StatusCodes.Status500InternalServerError, result)
             };
         }
+        [EndpointName("GetBookBorrowHistory")]
+        [EndpointDescription("Retrieves the borrowing history of a book.")]
+        [ProducesResponseType<ResultT<IEnumerable<BookBorrowTransactionDto>>>(StatusCodes.Status200OK)]
+        [ProducesResponseType<Result>(StatusCodes.Status404NotFound)]
+        [HttpGet("{id}/borrowings")]
+        public async Task<IActionResult> GetBorrowHistory(int id, CancellationToken cancellation)
+        {
+            var result = await _bookService.GetBorrowHistoryAsync(id, cancellation);
+
+            if (result.IsSuccess)
+                return Ok(result);
+
+            return NotFound(result);
+        }
     }
 }

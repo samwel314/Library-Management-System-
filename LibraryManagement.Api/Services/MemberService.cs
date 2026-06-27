@@ -112,5 +112,31 @@ namespace LibraryManagement.Api.Services
 
             return Result.Success("Member deleted successfully");
         }
+        public async Task<ResultT<IEnumerable<MemberBorrowTransactionDto>>> GetBorrowHistoryAsync( int id, CancellationToken cancellation)
+        {
+            var isValidMember = await _db.Members.AnyAsync(m => m.Id == id, cancellation);
+
+            if (!isValidMember)
+                return ResultT<IEnumerable<MemberBorrowTransactionDto>>.Failure("Member not found", ErrorType.NotFound);
+
+            var memberBorrowTransactions = await _db.BorrowTransactions.AsNoTracking()
+               .Where(br => br.MemberId == id).OrderByDescending(br => br.BorrowDate)
+                .Select(br => new MemberBorrowTransactionDto
+               {
+                   Id = br.Id,
+                   BorrowDate = br.BorrowDate,
+                   DueDate = br.DueDate,
+                   ReturnDate = br.ReturnDate,
+                   Book = new BookLookupDto
+                   {
+                       Id = br.BookId,
+                       Title = br.Book.Title,
+                   }
+               }  ).ToListAsync(cancellation);
+            return ResultT<IEnumerable<MemberBorrowTransactionDto>>.Success(memberBorrowTransactions); 
+
+        }
+
+
     }
 }

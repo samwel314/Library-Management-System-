@@ -9,6 +9,7 @@ namespace LibraryManagement.Api.Services.Interfaces
         Task<ResultT<IEnumerable<MemberDto>>> GetAllAsync(CancellationToken cancellation);
         Task<ResultT<MemberDto>> GetByIdAsync(int id, CancellationToken cancellation);
         Task<Result> UpdateAsync(int id, MemberRequestDto requestDto, CancellationToken cancellation);
-        Task<Result> DeleteAsync(int id, CancellationToken cancellation); 
+        Task<Result> DeleteAsync(int id, CancellationToken cancellation);
+        Task<ResultT<IEnumerable<MemberBorrowTransactionDto>>> GetBorrowHistoryAsync(int id, CancellationToken cancellation);
     }
 }

@@ -11,7 +11,10 @@ namespace LibraryManagement.Api.Services.Interfaces
         Task<Result> UpdateBasicInfoAsync(int id , UpdateBookBasicInfoDto requestDto, CancellationToken cancellation);
         Task<Result> UpdateAuthorsAsync(int id, UpdateBookAuthorsDto requestDto, CancellationToken cancellation);
         Task<Result> UpdateCoverImageAsync(int id, UpdateBookCoveImageDto requestDto, CancellationToken cancellation);
-        Task<Result> DeleteAsync(int id, CancellationToken cancellation); 
+        Task<Result> DeleteAsync(int id, CancellationToken cancellation);
+        Task<ResultT<IEnumerable<BookBorrowTransactionDto>>> GetBorrowHistoryAsync(
+    int id,
+    CancellationToken cancellation); 
 
     }
 }
