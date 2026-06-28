@@ -14,6 +14,9 @@ using System.Text.Json.Serialization;
 
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddProblemDetails();
+
+builder.Services.AddExceptionHandler<GlobalErrorHandling>();
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
 builder.Services.AddDbContext<LibraryDbContext>(options => options.UseSqlServer(connectionString));
@@ -135,6 +138,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 
