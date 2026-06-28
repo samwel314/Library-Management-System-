@@ -8,6 +8,24 @@ The primary goal was to build a secure and maintainable backend that demonstrate
 
 ---
 
+# Features
+
+* JWT Authentication using ASP.NET Identity
+* Role-Based Authorization (Administrator, Librarian, Staff)
+* Book Management (Create, Read, Update, Delete)
+* Author, Publisher, Category, Member, and User Management
+* Book Borrowing and Return
+* Borrowing History for Members and Books
+* Active Borrowings
+* User Activity Logging
+* Book Search by Title, Author, and Category
+* Book Filtering by Status
+* Pagination for Book Listing
+* Book Cover Image Upload
+* Hierarchical Categories
+
+---
+
 # Design Choices
 
 ## Authentication & User Management
@@ -32,11 +50,11 @@ Authorization is implemented using **ASP.NET Core Role-Based Authorization**.
 
 The system contains three roles:
 
-- Administrator
-- Librarian
-- Staff
+* Administrator
+* Librarian
+* Staff
 
-This keeps authorization simple while ensuring that only authorized users can access administrative operations.
+This ensures that only authorized users can access protected resources.
 
 ---
 
@@ -48,24 +66,28 @@ Instead of storing author names, publishers, or categories directly inside the *
 
 This design:
 
-- Reduces duplicated data.
-- Improves maintainability.
-- Makes future extensions easier.
+* Reduces duplicated data.
+* Improves maintainability.
+* Makes future extensions easier.
 
 ---
+
 ## Data Access
 
-The application uses Entity Framework Core's DbContext directly inside the service layer.
+The application uses Entity Framework Core's **DbContext** directly inside the service layer.
 
 Since Entity Framework Core already implements the Repository and Unit of Work patterns, introducing an additional repository layer would add unnecessary abstraction for the current project while providing little practical benefit.
+
+---
+
 ## Books & Authors Relationship
 
 Books and Authors have a **many-to-many relationship** implemented using the **BookAuthors** junction table.
 
 This allows:
 
-- One book to have multiple authors.
-- One author to write multiple books.
+* One book to have multiple authors.
+* One author to write multiple books.
 
 ---
 
@@ -91,10 +113,10 @@ Borrowing operations are stored inside a dedicated **BorrowTransactions** table 
 
 Keeping every borrowing transaction allows the system to provide:
 
-- Borrowing history per member.
-- Borrowing history per book.
-- Active borrowings.
-- Future reporting capabilities.
+* Borrowing history per member.
+* Borrowing history per book.
+* Active borrowings.
+* Future reporting capabilities.
 
 ---
 
@@ -112,13 +134,29 @@ Important user operations are stored inside a dedicated **UserActivityLogs** tab
 
 Examples include:
 
-- Book Created
-- Book Updated
-- Book Deleted
-- Borrow Book
-- Return Book
+* Book Created
+* Book Updated
+* Book Deleted
+* Borrow Book
+* Return Book
 
 Keeping activity logs in a separate table keeps the domain model clean while providing a lightweight audit trail.
+
+---
+
+## Result Pattern
+
+The application uses a custom **Result Pattern** to standardize service responses.
+
+Expected business scenarios return a unified result object instead of throwing exceptions, providing consistent API responses and keeping controller logic simple.
+
+---
+
+## Global Exception Handling
+
+Unexpected exceptions are handled centrally using ASP.NET Core's global exception handling mechanism.
+
+This ensures that unhandled exceptions return consistent HTTP responses while preventing internal implementation details from being exposed to clients.
 
 ---
 
@@ -128,8 +166,8 @@ Business logic is implemented inside **Services** rather than Controllers.
 
 Controllers are responsible only for:
 
-- Receiving HTTP requests.
-- Returning HTTP responses.
+* Receiving HTTP requests.
+* Returning HTTP responses.
 
 This separation improves readability, maintainability, and makes business logic easier to modify.
 
@@ -141,9 +179,9 @@ DTOs are used for every request and response.
 
 This provides several advantages:
 
-- Prevent exposing database entities directly.
-- Validate client input.
-- Keep API contracts independent from persistence models.
+* Prevent exposing database entities directly.
+* Validate client input.
+* Keep API contracts independent from persistence models.
 
 ---
 
@@ -154,21 +192,7 @@ Book cover images are stored on disk while only the image path is stored inside 
 This keeps the database smaller and makes replacing the storage provider easier in the future.
 
 ---
-## API Modules
 
-The API is organized into the following modules:
-
-- Authentication
-- Books
-- Authors
-- Categories
-- Publishers
-- Members
-- Borrowings
-- Users
-
-A complete Postman collection is included with the project for testing all endpoints.
---- 
 # Running the Project
 
 Before running the application:
@@ -181,10 +205,11 @@ Before running the application:
 
 During startup, the application automatically:
 
-- Applies pending Entity Framework Core migrations.
-- Creates the required system roles.
-- Creates the default administrator account (if it does not already exist).
-Default Administrator Credentials:
+* Applies pending Entity Framework Core migrations.
+* Creates the required system roles.
+* Creates the default administrator account (if it does not already exist).
+
+Default Administrator Credentials
 
 **Email**
 
@@ -198,27 +223,26 @@ admin@library.com
 Admin@123
 ```
 
----
+4. Execute the provided **seed-data.sql** script after the application starts successfully.
 
-4. After the application starts successfully, execute the provided seed-data.sql script to insert sample business data.
-> **Note:** Before executing the script, update the `USE` statement at the top of the script to match your local database name .
-
+> **Note:** Before executing the script, update the `USE` statement at the top of the script to match your local database name.
 
 The script inserts sample:
 
-- Categories
-- Publishers
-- Authors
-- Members
-- Books
-- BookAuthors
-- Borrow Transactions
+* Categories
+* Publishers
+* Authors
+* Members
+* Books
+* BookAuthors
+* Borrow Transactions
 
+---
 
 # Additional Files
 
 The repository includes:
 
-- Entity Relationship Diagram (ERD)
-- SQL Seed Script
-- Postman Collection
+* Entity Relationship Diagram (ERD)
+* SQL Seed Script
+* Postman Collection
